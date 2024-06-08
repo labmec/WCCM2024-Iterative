@@ -6,6 +6,8 @@
 \usepackage{amssymb}
 \usepackage{times}
 \usepackage{stmaryrd}
+\usepackage{subfig}
+\usepackage{multirow}
 \title{ON THE ITERATIVE SOLUTION OF SADDLE POINT PROBLEMS USING A SYMMETRIC POSITIVE DEFINITE PRECONDITIONER}
 
 \author{PHILIPPE DEVLOO$^{1}$, GIOVANE AVANCINI$^{2}$ AND MARINA MENEGHEL$^{3}$}
@@ -212,18 +214,80 @@ From \cite{gurtin1982introduction}, we can approximate the inverse of $\mathbf{\
 
 \section{NUMERICAL RESULTS}
 
+In this section, a tridimensional problem is used to assess the performance and stability of the proposed iterative method. In all analyses, convergence is reached when the Euclidian norm of the residual is less than $10^{-9}$, and the maximum number of iterations is set to 50. The solver step is performed with 8 threads on a workstation with an Intel(R) Xeon(R) Gold 6130 2.10GHz CPU.
 
+\subsection{3D Darcy problem}
+
+The computational domain consists on a unit cube $\Omega=(0,1)\times(0,1)\times(0,1)$ and a uniform mesh of hexahedral elements with $k=2$ and characteristic size $h_e=1/n$, where $n=n_x=n_y=n_z$ is the number of elements used in each dimension, starting from $n=5$ up to $n=60$.  The permeability tensor is assumed to be isotropic and unitary, so $\mathcal{K}=\mathbf{I}_3$. The following harmonic solution is adopted for the pressure field:
+\vskip -0.3cm
+\begin{equation} \label{eq:analytic-pressure}
+    u(x,y,z) = \frac{\sin(\pi x) \sin(\pi y) \sinh(\sqrt{2}\pi z)}{\sinh(\sqrt{2}\pi)} \text{.}
+\end{equation}
+
+It is straightforward to derive the corresponding flux field from Eq. \eqref{eq:analytic-pressure}. Figure \ref{fig:analytic-solutions} shows the analytic solutions over the domain. Dirichlet boundary conditions are imposed on all the facets.
+
+\begin{figure}[!ht]
+    \centering
+    \subfloat[]{\includegraphics[trim={0cm 0cm 2.42cm 0cm},clip,width=0.49\textwidth]{figs/exact1.png}} \hfill
+    \subfloat[]{\includegraphics[trim={0cm 0cm 2.42cm 0cm},clip,width=0.49\textwidth]{figs/exact5.png}}
+    \caption{3D Darcy problem - analytic solution for the pressure (at left) and flux magnitude (at right).}
+    \label{fig:analytic-solutions}
+\end{figure}
+
+Firstly, we analyse the convergence of the iterative method as a function of the compressibility parameter $\alpha$. Figure \ref{fig:convergence-alpha} shows the number of iterations required to reach convergence for different values of $\alpha$. It is evident that $\alpha$ plays a key role on the method efficiency, as the higher it gets, the more iterations are required to reach convergence. As the value decreases, we observe a faster convergence as the preconditioner system approximates to the original matrix. However, for excessive small values of $\alpha$, the method shows a loss in the precision. This behaviour is expected as the lower the $\alpha$, the problem tends to the original indefinite saddle-point matrix where Cholesky decomposition likely will fail to find a solution. The optimal value of $\alpha$ also varies with the mesh size. The more refined the mesh, the smaller is the magnitude of the elemental contributions in the global matrix, so the compressibility parameter must be adjusted accordingly.
+
+\begin{figure}[!ht]
+    \centering
+    \subfloat[$n=10$]{\includegraphics[trim={0cm 0cm 2.42cm 0cm},clip,scale=0.78]{figs/convergence-n-10.pdf}} \hfill
+    \subfloat[$n=20$]{\includegraphics[trim={0cm 0cm 2.42cm 0cm},clip,scale=0.78]{figs/convergence-n-20.pdf}}
+    \includegraphics[trim={8.8cm 0cm 0cm 0cm},clip,scale=0.78]{figs/convergence-n-20.pdf} \\
+    \subfloat[$n=40$]{\includegraphics[trim={0cm 0cm 2.42cm 0cm},clip,scale=0.78]{figs/convergence-n-40.pdf}} \hfill
+    \subfloat[$n=60$]{\includegraphics[trim={0cm 0cm 2.42cm 0cm},clip,scale=0.78]{figs/convergence-n-60.pdf}}
+    \includegraphics[trim={8.8cm 0cm 0cm 0cm},clip,scale=0.78]{figs/convergence-n-20.pdf}
+    \caption{3D Darcy problem - Number of iterations required to reach convergence as a function of the compressibility parameter $\alpha$.}
+    \label{fig:convergence-alpha}
+\end{figure}
+
+The computational cost of the proposed iterative method is also investigated and displayed in Table \ref{tab:computational-cost}. For these analyses, we use the Cholesky implementation of PARDISO \cite{schenk2000efficient} to build the positive-definite preconditioner for the iterative solver, while the solution of the original saddle-point problem is performed with the LDLT decomposition from PARDISO as well. It shall be highlited that matrix $\mathbf{\Tilde{G}} / \mathbf{C}$ only needs to be decomposed once within the proposed iterative scheme. Thus, the total time is computed as the sum of the time required to build the preconditioner plus the time spent during each iteration solve.
+
+\begin{table}[!htb]
+    \centering
+    \caption{3D Darcy problem - Computational cost of the proposed iterative method as a function of the compressibility parameter $\alpha$.}
+    \begin{tabular}{ccccccc}
+        \hline
+        \multirow{2}{*}{Method} & \multicolumn{6}{c}{Time (ms)}                                \\ \cline{2-7} 
+                                & $n=5$ & $n=10$ & $n=20$  & $n=40$   & $n=50$  & $n=60$      \\ \hline
+        $\alpha=10^{-2}$        & 133   & 756    & 20\,605 & 764\,405 & -        & -           \\
+        $\alpha=10^{-3}$        & 106   & 541    & 7\,000  & 279\,441 & -        & -           \\
+        $\alpha=10^{-4}$        & 97    & 458    & 4\,869  & 145\,215 & 521\,451 & 1\,552\,290 \\
+        $\alpha=10^{-5}$        & 100   & 441    & 4\,308  & 127\,344 & 460\,492 & 1\,335,251  \\
+        $\alpha=10^{-6}$        & 95    & 432    & 4\,065  & 115\,296 & 425\,015 & 1\,281\,101 \\
+        $\alpha=10^{-7}$        & 137   & 507    & 4\,055  & 112\,178 & 416\,897 & 1\,267\,023 \\
+        $\alpha=10^{-8}$        & -     & -      & -       & -        & -        & 1\,253\,520 \\
+        Direct                  & 80    & 379    & 4\,150  & 150\,839 & 540\,429 & 1\,757\,863 \\ \hline
+    \end{tabular}
+    \label{tab:computational-cost}
+\end{table}
+
+It can be noticed that, for an optimum value of $\alpha$, the iterative method starts to be more efficient than the direct solver for $n \geq 20$. For the finest mesh, a speedup of up to 30 \% can be achieved for $\alpha=10^-8$. However, further studies are needed to determine the optimal value of $\alpha$ as a function of the mesh size. Figure \ref{fig:speedup} shows the time spent during the solution step using the proposed method with the optimum $\alpha$ as a percentage of the time consumed by the direct solver.
+\vskip -0.3cm
+\begin{figure}
+    \centering
+    \includegraphics[scale=1.0]{figs/speedup.pdf}
+    \caption{3D Darcy problem - Time consumption obtained using the optimum value of $\alpha$ compared to the direct method for different levels of refinement.}
+    \label{fig:speedup}
+\end{figure}
 
 \section{CONCLUSIONS}
 
-In this work, we proposed an iterative method based on the introduction of a small compressibility to solve saddle point problems using a symmetric positive-definite preconditioner. This scheme not only reduces the number of unkonwns in the global system but also allows the usage of reliable solvers such as Cholesky decomposition and CG-like methods to compute the fluxes increment.
+In this work, an iterative method was proposed based on the introduction of a small compressibility to solve saddle point problems using a symmetric positive-definite preconditioner. This scheme not only reduces the number of unkonwns in the global system but also allows the usage of optimized solvers such as Cholesky decomposition and CG-like methods to compute the fluxes increment. The use of an iterative solver to also decompose the preconditioner matrix shall be studied in future works.
 
 The numerical results demonstrated that as the compressibility parameter increases, the number of iterations required to reach convergence also increases. However, for smaller values of $\alpha$, the method converges in less than 3 iterations. Also, an excessive small value of $\alpha$ can lead to numerical instability, as the system becomes ill-conditioned. Therefore, a criterion on how to determine the optimal value of $\alpha$ a priori must be investigated in the future.
 
-As the number of degrees of freedom increases, the proposed method demonstrated to be more efficient than the direct solver. Choosing the apropriate $\alpha$, the computational cost was reduced by up to 40 \% for the most refined mesh.
+As the number of degrees of freedom increases, the proposed method demonstrated to be more efficient than the direct solver. Choosing the apropriate $\alpha$, the computational cost was reduced by up to 30 \% for the most refined mesh.
 
 \vspace{20pt}
-\noindent \textbf{Acknowledgements.} We gratefully acknowledge the support of EPIC - Energy Production Innovation Center through FAPESP/Equinor (Grant 2023/06981/-5)  and Total Energies Brazil through FUNCAMP (Process 76042-23). We also acknowledge the support of ANP (Brazil’s National Oil, Natural Gas and Biofuels Agency).
+\noindent \textbf{Acknowledgements.} We gratefully acknowledge the support of EPIC - Energy Production Innovation Center through FAPESP/Equinor (Grant 2023/06981/-5),  Total Energies Brazil through FUNCAMP (Process 76042-23) and the Brazilian National Council for Scientific and Technological Development (grants 305823/2017-5 and 309597/2021-8). We also acknowledge the support of ANP (Brazil’s National Oil, Natural Gas and Biofuels Agency).
 \vspace{12pt}
 
 \bibliographystyle{ieeetr}
