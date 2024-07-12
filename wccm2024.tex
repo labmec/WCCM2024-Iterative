@@ -103,30 +103,40 @@ Equations \eqref{eq:discrete} can be expressed in matrix form as:
         \mathbf{A} & \mathbf{B} \\
         \mathbf{B}^T & \mathbf{0}
     \end{bmatrix}
-    \begin{bmatrix}
+    \begin{Bmatrix}
         \boldsymbol{\sigma}^\gamma \\
         \mathbf{u}^\gamma
-    \end{bmatrix}
+    \end{Bmatrix}
     =
-    \begin{bmatrix}
+    \begin{Bmatrix}
         \mathbf{f}^\gamma_{\boldsymbol{\sigma}} \\
         \mathbf{f}^\gamma_{u}
-    \end{bmatrix},
+    \end{Bmatrix}, \qquad
+    \begin{bmatrix}
+        \mathbf{K}
+    \end{bmatrix}
+    \begin{Bmatrix}
+        \mathbf{\boldsymbol{\beta}}
+    \end{Bmatrix}
+    =
+    \begin{Bmatrix}
+        \mathbf{f}
+    \end{Bmatrix},
 \end{equation}
 
 \noindent where matrix $\mathbf{A}$ represents the flux contribution and matrix $\mathbf{B}$ is the divergent operator which plays the role of imposing a constraint to the solution. The right-hand side vectors $\mathbf{f}^\gamma_{\boldsymbol{\sigma}}$ and $\mathbf{f}^\gamma_{u}$ are the Dirichlet contribution and source term, respectively. This latter often is assumed to be zero.
 
 It is worth a discussion about some properties of problem \eqref{eq:matrixform}. Matrix $\mathbf{A}$ is symmetric positive-definite and contains contributions from facet and internal fluxes. The latter ones can be eliminated from the global system by using a static condensation procedure \cite{guyan1965reduction}. Using the element-wise divergence constant approximation space of \cite{devloo2022efficient} results in a single pressure unknown per element. Thus, the global system comprises only facet fluxes and elemental pressures contributions.
 
-Assuming a solution vector $\mathbf{u}=\{\mathbf{u}_1, \mathbf{u}_2\}^T$ such that $\mathbf{B}^T . \mathbf{u}_1 = \mathbf{0}$ (i.e. $\mathbf{u}_1 \in Ker\left( \mathbf{B}^T \right)$), then:
+Assuming a solution vector $\boldsymbol{\beta}=\{\boldsymbol{\beta}_1, \boldsymbol{\beta}_2\}^T$ such that $\mathbf{B}^T . \boldsymbol{\beta}_1 = \mathbf{0}$ (i.e. $\boldsymbol{\beta}_1 \in Ker\left( \mathbf{B}^T \right)$), then:
 \vskip -0.3cm
 \begin{equation}
-    \{\mathbf{u}_1, \mathbf{u}_2\} \cdot \mathbf{G} \cdot 
+    \{\boldsymbol{\beta}_1, \boldsymbol{\beta}_2\} \cdot \mathbf{K} \cdot 
     \begin{Bmatrix}
-        \mathbf{u}_1 \\
-        \mathbf{u}_2
+        \boldsymbol{\beta}_1 \\
+        \boldsymbol{\beta}_2
     \end{Bmatrix}
-    = \mathbf{u}_1^T \cdot \mathbf{A} \cdot \mathbf{u}_1 > 0
+    = \boldsymbol{\beta}_1^T \cdot \mathbf{A} \cdot \boldsymbol{\beta}_1 > 0
 \end{equation}
 
 We propose a modified matrix
@@ -142,68 +152,72 @@ We propose a modified matrix
 \noindent where matrix $\mathbf{C}$ is symmetric positive-definite. Once $\mathbf{C}$ plays the role of adding an artificial compressibility to the system, the static condensation procedure can also be applied to eliminate the pressure unknowns:
 \vskip -0.3cm
 \begin{equation}
-    \mathbf{\Tilde{G}} / \mathbf{C} = \mathbf{A} + \mathbf{B}\mathbf{C}^{-1}\mathbf{B}^T
+    \bar{\mathbf{G}} = \mathbf{A} + \mathbf{B}\mathbf{C}^{-1}\mathbf{B}^T
 \end{equation}
-
-\noindent where $\mathbf{\Tilde{G}} / \mathbf{C}$ is also symmetric positive-definite and can be seen as the Schur complement of block $\mathbf{C}$ of matrix $\mathbf{\Tilde{G}}$.
-
-The proposed iterative method uses matrix $\mathbf{\Tilde{G}} / \mathbf{C}$ as a preconditioner for matrix $\mathbf{G}$. Given an approximate solution $\mathbf{u}^k$, where $k$ stands for the iteration counter, an updated solution $\mathbf{u}^{k+1}$ can be retrieved by doing: first, the residual $\mathbf{r}^{k}$ is computed as:
 \vskip -0.3cm
 \begin{equation}
-    \mathbf{r}^{k} = \mathbf{f} - \mathbf{G} \mathbf{u}^k
+    \bar{\mathbf{f}} = \mathbf{f}^\gamma_{\boldsymbol{\sigma}} + \mathbf{B}\mathbf{C}^{-1}\mathbf{f}^\gamma_{u}
 \end{equation}
 
-\noindent with $\mathbf{f}$ standing for the external forces. Then, we compute the solution increment:
+\noindent where $\bar{\mathbf{G}}$ is also symmetric positive-definite and can be seen as the Schur complement of block $\mathbf{C}$ of matrix $\mathbf{\Tilde{G}}$. 
+
+The proposed iterative method uses matrix $\bar{\mathbf{G}}$ as a preconditioner for matrix $\mathbf{K}$. Given an approximate solution for the flux $\boldsymbol{\sigma}^k$, where $k$ stands for the iteration counter, an updated solution $\boldsymbol{\sigma}^{k+1}$ can be retrieved by doing: first, the residual $\mathbf{r}^{k}$ is computed as:
 \vskip -0.3cm
 \begin{equation}
-    \Delta\mathbf{u}^{k} = \mathbf{\Tilde{G}}^{-1} \mathbf{r}^{k}
+    \mathbf{r}^{k} = - \frac{1}{\alpha}\mathbf{B}\mathbf{B}^T \boldsymbol{\sigma}^k .
+\end{equation}
+
+\noindent Then, we compute the solution increment:
+\vskip -0.3cm
+\begin{equation}
+    \Delta\boldsymbol{\sigma}^k = \mathbf{\bar{G}}^{-1} \mathbf{r}^{k}
 \end{equation}
 
 \noindent finally yielding
 \vskip -0.3cm
 \begin{equation}
-    \mathbf{u}^{k+1} = \mathbf{u}^{k} + \Delta\mathbf{u}^{k}
+    \boldsymbol{\sigma}^{k+1} = \boldsymbol{\sigma}^{k} + \Delta\boldsymbol{\sigma}^k
 \end{equation}
 
 In engineering terms, the matrix of an incompressible problem is preconditioned by a matrix corresponding to a slightly compressible system. To demonstrate its convergence, we start from the basic description of the iterative method:
 \vskip -0.3cm
 \begin{equation}
-    \Delta\mathbf{u}^{k} = \mathbf{u}^{k+1} - \mathbf{u}^{k} = \mathbf{\Tilde{G}}^{-1} \left( \mathbf{f} - \mathbf{G} \mathbf{u}^k \right)
+    \Delta\boldsymbol{\beta}^{k} = \boldsymbol{\beta}^{k+1} - \boldsymbol{\beta}^{k} = \mathbf{\Tilde{G}}^{-1} \left( \mathbf{f} - \mathbf{K} \boldsymbol{\beta}^k \right)
 \end{equation}
 \vskip -0.3cm
 \begin{equation}
-    \Delta\mathbf{u}^{k+1} = \mathbf{u}^{k+2} - \mathbf{u}^{k+1} = \mathbf{\Tilde{G}}^{-1} \left( \mathbf{f} - \mathbf{G} \mathbf{u}^{k+1} \right)
+    \Delta\boldsymbol{\beta}^{k+1} = \boldsymbol{\beta}^{k+2} - \boldsymbol{\beta}^{k+1} = \mathbf{\Tilde{G}}^{-1} \left( \mathbf{f} - \mathbf{K} \boldsymbol{\beta}^{k+1} \right)
 \end{equation}
 
 \noindent such that
 \vskip -0.3cm
 \begin{equation}
-    \Delta\mathbf{u}^{k+1} - \Delta\mathbf{u}^{k} = \mathbf{\Tilde{G}}^{-1} \mathbf{G} \Delta\mathbf{u}^{k}
+    \Delta\boldsymbol{\beta}^{k+1} - \Delta\boldsymbol{\beta}^{k} = \mathbf{\Tilde{G}}^{-1} \mathbf{K} \Delta\boldsymbol{\beta}^{k}
 \end{equation}
 
 \noindent or
 \vskip -0.3cm
 \begin{equation}
-    \Delta\mathbf{u}^{k+1} = \left( \mathbf{I} - \mathbf{\Tilde{G}}^{-1} \mathbf{G} \right) \Delta\mathbf{u}^{k}
+    \Delta\boldsymbol{\beta}^{k+1} = \left( \mathbf{I} - \mathbf{\Tilde{G}}^{-1} \mathbf{K} \right) \Delta\boldsymbol{\beta}^{k}
 \end{equation}
 
-\noindent which implies that the iterative method will converge if $\left( \mathbf{I} - \mathbf{\Tilde{G}}^{-1} \mathbf{G} \right)$ is a contraction i.e. if its maximum eigenvalue is less than one. One notices that for $\mathbf{\Tilde{G}} = \mathbf{G}$, no solution increment is obtained, so the method converges in a single iteration.
+\noindent which implies that the iterative method will converge if $\left( \mathbf{I} - \mathbf{\Tilde{G}}^{-1} \mathbf{K} \right)$ is a contraction i.e. if its maximum eigenvalue is less than one. One notices that for $\mathbf{\Tilde{G}} = \mathbf{K}$, no solution increment is obtained, so the method converges in a single iteration.
 
 From \cite{gurtin1982introduction}, we can approximate the inverse of $\mathbf{\Tilde{G}}$ as:
 \vskip -0.3cm
 \begin{equation}
-    \mathbf{\Tilde{G}}^{-1} = \mathbf{G}^{-1}-\mathbf{G}^{-1}
+    \mathbf{\Tilde{G}}^{-1} = \mathbf{K}^{-1}-\mathbf{K}^{-1}
     \begin{bmatrix}
         \mathbf{0} && \mathbf{0} \\
         \mathbf{0} && -\mathbf{C}
     \end{bmatrix}
-    \mathbf{G}^{-1} + O(\mathbf{C})
+    \mathbf{K}^{-1} + O(\mathbf{C})
 \end{equation}
 
 \noindent so neglecting higher order terms yeilds:
 \vskip -0.3cm
 \begin{equation}
-    \left( \mathbf{I} - \mathbf{\Tilde{G}}^{-1} \mathbf{G} \right) \simeq \mathbf{G}^{-1}
+    \left( \mathbf{I} - \mathbf{\Tilde{G}}^{-1} \mathbf{K} \right) \simeq \mathbf{K}^{-1}
     \begin{bmatrix}
         \mathbf{0} && \mathbf{0} \\
         \mathbf{0} && -\mathbf{C}
