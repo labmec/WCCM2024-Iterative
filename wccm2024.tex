@@ -66,8 +66,8 @@ Applying the standard Galerkin method to Eqs. \eqref{eq:darcy}, the weak form of
 \vskip -0.3cm
 \begin{equation} \label{eq:weak}
     \begin{split}
-        \int_{\Omega} \mathcal{K}^{-1}\boldsymbol{\sigma} \cdot \mathbf{w}_{\boldsymbol{\sigma}} \, d\Omega - \int_{\Omega} u \nabla \cdot \mathbf{w}_{\boldsymbol{\sigma}} \, d\Omega = - \int_{\partial\Omega_D} u_D \llbracket \mathbf{w}_{\boldsymbol{\sigma}} \rrbracket \, d\partial\Omega, \\
-        \int_{\Omega} \nabla \cdot \boldsymbol{\sigma} w_u \, d\Omega = \int_{\Omega} f w_u \, d\Omega,
+        \int_{\Omega} \mathcal{K}^{-1}\boldsymbol{\sigma} \cdot \mathbf{w}_{\boldsymbol{\sigma}} \, d\Omega - \int_{\Omega} u \nabla \cdot \mathbf{w}_{\boldsymbol{\sigma}} \, d\Omega = - \int_{\partial\Omega_D} u_D \, ( \mathbf{w}_{\boldsymbol{\sigma}} \cdot \mathbf{n}) \, d\partial\Omega, \\
+        \int_{\Omega} \nabla \cdot \boldsymbol{\sigma} \,w_u \, d\Omega = \int_{\Omega} f w_u \, d\Omega,
     \end{split}
 \end{equation}
 
@@ -89,8 +89,8 @@ Rewriting Eqs. \eqref{eq:weak} using the finite element spaces from Eqs. \eqref{
 
 \begin{equation} \label{eq:discrete}
     \begin{split}
-        \sum_{\Omega_e \in \mathcal{T}} \left(\int_{\Omega_e} \mathcal{K}^{-1}\boldsymbol{\sigma}^\gamma \cdot \mathbf{w}_{\boldsymbol{\sigma}}^\gamma \, d\Omega - \int_{\Omega_e} u^\gamma \nabla \cdot \mathbf{w}_{\boldsymbol{\sigma}}^\gamma \, d\Omega \right)=- \sum_{\Omega_e \in \partial\Omega_D} \int_{\partial\Omega_e} u_D \llbracket \mathbf{w}^\gamma_{\boldsymbol{\sigma}} \rrbracket \, d\partial\Omega, \\
-        \sum_{\Omega_e \in \mathcal{T}} \int_{\Omega_e} \nabla \cdot \boldsymbol{\sigma}^\gamma w_u^\gamma \, d\Omega = \sum_{\Omega_e \in \mathcal{T}} \int_{\Omega_e} f w_u^\gamma \, d\Omega.
+        \sum_{\Omega_e \in \mathcal{T}} \left(\int_{\Omega_e} \mathcal{K}^{-1}\boldsymbol{\sigma}^\gamma \cdot \mathbf{w}_{\boldsymbol{\sigma}}^\gamma \, d\Omega - \int_{\Omega_e} u^\gamma \, \nabla \cdot \mathbf{w}_{\boldsymbol{\sigma}}^\gamma \, d\Omega \right)=- \sum_{\Omega_e \in \partial\Omega_D} \int_{\partial\Omega_e} u_D \ (\mathbf{w}^\gamma_{\boldsymbol{\sigma}} \cdot \mathbf{n}) \, d\partial\Omega, \\
+        \sum_{\Omega_e \in \mathcal{T}} \int_{\Omega_e} \nabla \cdot \boldsymbol{\sigma}^\gamma \, w_u^\gamma \, d\Omega = \sum_{\Omega_e \in \mathcal{T}} \int_{\Omega_e} f w_u^\gamma \, d\Omega.
     \end{split}
 \end{equation}
 
@@ -162,15 +162,25 @@ We propose a modified matrix
 \noindent where $\bar{\mathbf{G}}$ is also symmetric positive-definite and can be seen as the Schur complement of block $\mathbf{C}$ of matrix $\mathbf{\Tilde{G}}$. 
 
 The proposed iterative method uses matrix $\bar{\mathbf{G}}$ as a preconditioner for matrix $\mathbf{K}$. Given an approximate solution for the flux $\boldsymbol{\sigma}^k$, where $k$ stands for the iteration counter, an updated solution $\boldsymbol{\sigma}^{k+1}$ can be retrieved by doing: first, the residual $\mathbf{r}^{k}$ is computed as:
+\begin{equation}
+\boldsymbol{\sigma}_0 = \bar{\mathbf{G}}^{-1}\bar{\mathbf{f}}
+\end{equation}
+\begin{equation}
+\mathbf{u}_0 = C^{-1}\left(\mathbf{B}^T \boldsymbol{\sigma}^0-\mathbf{f}_u^\gamma\right)
+\end{equation}
 \vskip -0.3cm
 \begin{equation}
-    \mathbf{r}^{k} = - \frac{1}{\alpha}\mathbf{B}\mathbf{B}^T \boldsymbol{\sigma}^k .
+    \mathbf{r}^{k} = - \mathbf{B}\mathbf{C}^{-1}\left(\mathbf{B}^T \boldsymbol{\sigma}^k-\mathbf{f}_u^\gamma \right) .
 \end{equation}
 
 \noindent Then, we compute the solution increment:
 \vskip -0.3cm
 \begin{equation}
     \Delta\boldsymbol{\sigma}^k = \mathbf{\bar{G}}^{-1} \mathbf{r}^{k}
+\end{equation}
+
+\begin{equation}
+\Delta \mathbf{u}^k = C^{-1}\mathbf{B}^T\Delta \boldsymbol{\sigma}
 \end{equation}
 
 \noindent finally yielding
