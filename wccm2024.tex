@@ -163,10 +163,10 @@ We propose a modified matrix
 
 The proposed iterative method uses matrix $\bar{\mathbf{G}}$ as a preconditioner for matrix $\mathbf{K}$. Given an approximate solution for the flux $\boldsymbol{\sigma}^k$, where $k$ stands for the iteration counter, an updated solution $\boldsymbol{\sigma}^{k+1}$ can be retrieved by doing: first, the residual $\mathbf{r}^{k}$ is computed as:
 \begin{equation}
-\boldsymbol{\sigma}_0 = \bar{\mathbf{G}}^{-1}\bar{\mathbf{f}}
+\boldsymbol{\sigma}^0 = \bar{\mathbf{G}}^{-1}\bar{\mathbf{f}}
 \end{equation}
 \begin{equation}
-\mathbf{u}_0 = C^{-1}\left(\mathbf{B}^T \boldsymbol{\sigma}^0-\mathbf{f}_u^\gamma\right)
+\mathbf{u}^0 = C^{-1}\left(\mathbf{B}^T \boldsymbol{\sigma}^0-\mathbf{f}_u^\gamma\right)
 \end{equation}
 \vskip -0.3cm
 \begin{equation}
@@ -180,13 +180,17 @@ The proposed iterative method uses matrix $\bar{\mathbf{G}}$ as a preconditioner
 \end{equation}
 
 \begin{equation}
-\Delta \mathbf{u}^k = C^{-1}\mathbf{B}^T\Delta \boldsymbol{\sigma}
+\Delta \mathbf{u}^k = C^{-1}\mathbf{B}^T\Delta \boldsymbol{\sigma}^k
 \end{equation}
 
 \noindent finally yielding
 \vskip -0.3cm
 \begin{equation}
     \boldsymbol{\sigma}^{k+1} = \boldsymbol{\sigma}^{k} + \Delta\boldsymbol{\sigma}^k
+\end{equation}
+\vskip -0.3cm
+\begin{equation}
+    \mathbf{u}^{k+1} = \mathbf{u}^{k} + \Delta\mathbf{u}^k
 \end{equation}
 
 In engineering terms, the matrix of an incompressible problem is preconditioned by a matrix corresponding to a slightly compressible system. To demonstrate its convergence, we start from the basic description of the iterative method:
