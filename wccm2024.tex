@@ -276,23 +276,30 @@ Firstly, we analyse the convergence of the iterative method as a function of the
     \label{fig:convergence-alpha}
 \end{figure}
 
-The computational cost of the proposed iterative method is also investigated and displayed in Table \ref{tab:computational-cost}. For these analyses, we use the Cholesky implementation of PARDISO \cite{schenk2000efficient} to build the positive-definite preconditioner for the iterative solver, while the solution of the original saddle-point problem is performed with the LDLT decomposition from PARDISO as well. It shall be highlited that matrix $\mathbf{\Tilde{G}} / \mathbf{C}$ only needs to be decomposed once within the proposed iterative scheme. Thus, the total time is computed as the sum of the time required to build the preconditioner plus the time spent during each iteration solve.
+A comparison of the computational cost of the proposed iterative method versus the direct solver is also investigated and displayed in Table \ref{tab:computational-cost}. For these analyses, we use the Cholesky implementation of PARDISO \cite{schenk2000efficient} to build the positive-definite preconditioner for the iterative solver, while the solution of the original saddle-point problem is performed with the LDLT decomposition from PARDISO as well. It shall be highlited that matrix $\mathbf{\Tilde{G}} / \mathbf{C}$ only needs to be decomposed once within the proposed iterative scheme. Thus, the total time is computed as the sum of the time required to build the preconditioner plus the time spent during each iteration solve. The computational cost is presented as a percentage of the time consumed by the direct solver, computed as:
+\vskip -0.3cm
+\begin{equation}
+    \text{Time Consumption [\%]} = \frac{t_{iterative} - t_{direct}}{t_{direct}} \times 100 \text{,}
+\end{equation}
+
+\noindent therefore positive values mean that the direct method consumed less time, while negative values indicates a speedup using the proposed iterative method.
 
 \begin{table}[!htb]
     \centering
-    \caption{3D Darcy problem - Computational cost of the proposed iterative method as a function of the compressibility parameter $\alpha$.}
+    \caption{3D Darcy problem - Speedup of the proposed iterative method as a function of the compressibility parameter $\alpha$.}
     \begin{tabular}{ccccccc}
         \hline
-        \multirow{2}{*}{Method} & \multicolumn{6}{c}{Time (ms)}                                \\ \cline{2-7} 
+        \multirow{2}{*}{Method} & \multicolumn{6}{c}{Time Consumption (\%)}                                \\ \cline{2-7} 
                                 & $n=5$ & $n=10$ & $n=20$  & $n=40$   & $n=50$  & $n=60$      \\ \hline
-        $\alpha=10^{-2}$        & 133   & 756    & 20\,605 & 764\,405 & -        & -           \\
-        $\alpha=10^{-3}$        & 106   & 541    & 7\,000  & 279\,441 & -        & -           \\
-        $\alpha=10^{-4}$        & 97    & 458    & 4\,869  & 145\,215 & 521\,451 & 1\,552\,290 \\
-        $\alpha=10^{-5}$        & 100   & 441    & 4\,308  & 127\,344 & 460\,492 & 1\,335,251  \\
-        $\alpha=10^{-6}$        & 95    & 432    & 4\,065  & 115\,296 & 425\,015 & 1\,281\,101 \\
-        $\alpha=10^{-7}$        & 137   & 507    & 4\,055  & 112\,178 & 416\,897 & 1\,267\,023 \\
-        $\alpha=10^{-8}$        & -     & -      & -       & -        & -        & 1\,253\,520 \\
-        Direct                  & 80    & 379    & 4\,150  & 150\,839 & 540\,429 & 1\,757\,863 \\ \hline
+        $\alpha=10^{-2}$        & 66.25   & 99.50    & 396.50 & 406.75 & -        & -           \\
+        $\alpha=10^{-3}$        & 32.50   & 42.75    & 68.70  & 85.25 & -        & -           \\
+        $\alpha=10^{-4}$        & 21.25    & 20.85    & 17.30  & -3.75 & -3.50 & -11.70 \\
+        $\alpha=10^{-5}$        & 25   & 16.35    & 3.80  & -15.60 & -14.80 & -24  \\
+        $\alpha=10^{-6}$        & 18.75    & 14    & -2.0  & -23.55 & -21.35 & -27.10 \\
+        $\alpha=10^{-7}$        & 71.25   & 33.78    & -2.3  & -25.65 & -23 & -28.10 \\
+        $\alpha=10^{-8}$        & -     & -      & -       & -        & -        & -29.50 \\
+        % Direct                  & 80    & 379    & 4\,150  & 150\,839 & 540\,429 & 1\,757\,863 \\
+        \hline
     \end{tabular}
     \label{tab:computational-cost}
 \end{table}
