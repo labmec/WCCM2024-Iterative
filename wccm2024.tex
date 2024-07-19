@@ -47,13 +47,13 @@ In the context of mixed finite element applied to Darcy equations using stable $
 
 \section{DARCY PROBLEM}
 
-Let $\Omega$ be an open domain with Lipschitz boundary $\partial \Omega = \partial\Omega_D \cup \partial\Omega_N$, where $\partial\Omega_D$ and $\partial\Omega_N$ stand for the Dirichlet and Neumann boundaries, respectively. The mixed form of Darcy equations consist of finding the flux $\boldsymbol{\sigma} \in H(\text{div},\Omega)$ and the pressure $u \in L^2(\Omega)$ such that
+Let $\Omega$ be an open domain with Lipschitz boundary $\partial \Omega = \partial\Omega_D \cup \partial\Omega_N$, where $\partial\Omega_D$ and $\partial\Omega_N$ stand for the Dirichlet and Neumann boundaries, respectively. The mixed form of Darcy equations consist of finding the flux $\boldsymbol{\sigma} \in H(\text{div},\Omega)$ and the pressure $p \in L^2(\Omega)$ such that
 \vskip -0.3cm
 \begin{equation} \label{eq:darcy}
     \begin{split}
-        \boldsymbol{\sigma}= -\mathcal{K}\nabla u, \quad \text{in} \quad \Omega, \\
+        \boldsymbol{\sigma}= -\mathcal{K}\nabla p, \quad \text{in} \quad \Omega, \\
         \nabla \cdot \boldsymbol{\sigma} = f, \quad \text{in} \quad \Omega, \\
-        u = u_D, \quad \text{on} \quad \partial\Omega_D, \\
+        p = p_D, \quad \text{on} \quad \partial\Omega_D, \\
         \boldsymbol{\sigma} \cdot \boldsymbol{n} = g, \quad \text{on} \quad \partial\Omega_N,
     \end{split}
 \end{equation}
@@ -62,16 +62,14 @@ Let $\Omega$ be an open domain with Lipschitz boundary $\partial \Omega = \parti
 
 \subsection{Weak statement}
 
-Applying the standard Galerkin method to Eqs. \eqref{eq:darcy}, the weak form of the Darcy problem reads: find $\boldsymbol{\sigma} \in H(\text{div},\Omega)$ and $u \in L^2(\Omega)$ such that for all $\mathbf{w}_{\boldsymbol{\sigma}} \in H(\text{div},\Omega)$ and $w_u \in L^2(\Omega)$:
+Applying the standard Galerkin method to Eqs. \eqref{eq:darcy}, the weak form of the Darcy problem reads: find $\boldsymbol{\sigma} \in H(\text{div},\Omega)$ and $u \in L^2(\Omega)$ such that for all $\mathbf{w}_{\boldsymbol{\sigma}} \in H(\text{div},\Omega)$ and $w_p \in L^2(\Omega)$:
 \vskip -0.3cm
 \begin{equation} \label{eq:weak}
     \begin{split}
-        \int_{\Omega} \mathcal{K}^{-1}\boldsymbol{\sigma} \cdot \mathbf{w}_{\boldsymbol{\sigma}} \, d\Omega - \int_{\Omega} u \nabla \cdot \mathbf{w}_{\boldsymbol{\sigma}} \, d\Omega = - \int_{\partial\Omega_D} u_D \, ( \mathbf{w}_{\boldsymbol{\sigma}} \cdot \mathbf{n}) \, d\partial\Omega, \\
-        \int_{\Omega} \nabla \cdot \boldsymbol{\sigma} \,w_u \, d\Omega = \int_{\Omega} f w_u \, d\Omega,
+        \int_{\Omega} \mathcal{K}^{-1}\boldsymbol{\sigma} \cdot \mathbf{w}_{\boldsymbol{\sigma}} \, d\Omega - \int_{\Omega} p \nabla \cdot \mathbf{w}_{\boldsymbol{\sigma}} \, d\Omega = - \int_{\partial\Omega_D} p_D \, ( \mathbf{w}_{\boldsymbol{\sigma}} \cdot \mathbf{n}) \, d\partial\Omega, \\
+        \int_{\Omega} \nabla \cdot \boldsymbol{\sigma} \,w_p \, d\Omega = \int_{\Omega} f w_p \, d\Omega.
     \end{split}
 \end{equation}
-
-\noindent where $\llbracket \bullet \rrbracket$ refers to the jump operator.
 
 \subsection{Finite element discretization}
 
@@ -82,15 +80,15 @@ The discretization of Eqs. \eqref{eq:weak} is performed using the Finite Element
 \end{equation}
 \vskip -0.3cm
 \begin{equation} \label{eq:spaces2}
-    W^\gamma = \{ u \in L^2(\Omega) : u|_{\Omega_e} \in W(\Omega_e), \forall \Omega_e \in \mathcal{T} \} \text{.}
+    W^\gamma = \{ p \in L^2(\Omega) : p|_{\Omega_e} \in W(\Omega_e), \forall \Omega_e \in \mathcal{T} \} \text{.}
 \end{equation}
 
-Rewriting Eqs. \eqref{eq:weak} using the finite element spaces from Eqs. \eqref{eq:spaces1}-\eqref{eq:spaces2}, the discretized problem thus reads: find $\boldsymbol{\sigma}^\gamma \in \mathbf{V}^\gamma$ and $u^\gamma \in W^\gamma$ such that for all $\mathbf{w}_{\boldsymbol{\sigma}}^\gamma \in \mathbf{V}^\gamma$ and $w_u^\gamma \in W^\gamma$:
+Rewriting Eqs. \eqref{eq:weak} using the finite element spaces from Eqs. \eqref{eq:spaces1}-\eqref{eq:spaces2}, the discretized problem thus reads: find $\boldsymbol{\sigma}^\gamma \in \mathbf{V}^\gamma$ and $p^\gamma \in W^\gamma$ such that for all $\mathbf{w}_{\boldsymbol{\sigma}}^\gamma \in \mathbf{V}^\gamma$ and $w_p^\gamma \in W^\gamma$:
 
 \begin{equation} \label{eq:discrete}
     \begin{split}
-        \sum_{\Omega_e \in \mathcal{T}} \left(\int_{\Omega_e} \mathcal{K}^{-1}\boldsymbol{\sigma}^\gamma \cdot \mathbf{w}_{\boldsymbol{\sigma}}^\gamma \, d\Omega - \int_{\Omega_e} u^\gamma \, \nabla \cdot \mathbf{w}_{\boldsymbol{\sigma}}^\gamma \, d\Omega \right)=- \sum_{\Omega_e \in \partial\Omega_D} \int_{\partial\Omega_e} u_D \ (\mathbf{w}^\gamma_{\boldsymbol{\sigma}} \cdot \mathbf{n}) \, d\partial\Omega, \\
-        \sum_{\Omega_e \in \mathcal{T}} \int_{\Omega_e} \nabla \cdot \boldsymbol{\sigma}^\gamma \, w_u^\gamma \, d\Omega = \sum_{\Omega_e \in \mathcal{T}} \int_{\Omega_e} f w_u^\gamma \, d\Omega.
+        \sum_{\Omega_e \in \mathcal{T}} \left(\int_{\Omega_e} \mathcal{K}^{-1}\boldsymbol{\sigma}^\gamma \cdot \mathbf{w}_{\boldsymbol{\sigma}}^\gamma \, d\Omega - \int_{\Omega_e} p^\gamma \, \nabla \cdot \mathbf{w}_{\boldsymbol{\sigma}}^\gamma \, d\Omega \right)=- \sum_{\Omega_e \in \partial\Omega_D} \int_{\partial\Omega_e} p_D \ (\mathbf{w}^\gamma_{\boldsymbol{\sigma}} \cdot \mathbf{n}) \, d\partial\Omega, \\
+        \sum_{\Omega_e \in \mathcal{T}} \int_{\Omega_e} \nabla \cdot \boldsymbol{\sigma}^\gamma \, w_p^\gamma \, d\Omega = \sum_{\Omega_e \in \mathcal{T}} \int_{\Omega_e} f w_p^\gamma \, d\Omega.
     \end{split}
 \end{equation}
 
@@ -105,12 +103,12 @@ Equations \eqref{eq:discrete} can be expressed in matrix form as:
     \end{bmatrix}
     \begin{Bmatrix}
         \boldsymbol{\sigma}^\gamma \\
-        \mathbf{u}^\gamma
+        \mathbf{p}^\gamma
     \end{Bmatrix}
     =
     \begin{Bmatrix}
         \mathbf{f}^\gamma_{\boldsymbol{\sigma}} \\
-        \mathbf{f}^\gamma_{u}
+        \mathbf{f}^\gamma_{p}
     \end{Bmatrix}, \qquad
     \begin{bmatrix}
         \mathbf{K}
@@ -124,7 +122,7 @@ Equations \eqref{eq:discrete} can be expressed in matrix form as:
     \end{Bmatrix},
 \end{equation}
 
-\noindent where matrix $\mathbf{A}$ represents the flux contribution and matrix $\mathbf{B}$ is the divergent operator which plays the role of imposing a constraint to the solution. The right-hand side vectors $\mathbf{f}^\gamma_{\boldsymbol{\sigma}}$ and $\mathbf{f}^\gamma_{u}$ are the Dirichlet contribution and source term, respectively. This latter often is assumed to be zero.
+\noindent where matrix $\mathbf{A}$ represents the flux contribution and matrix $\mathbf{B}$ is the divergent operator which plays the role of imposing a constraint to the solution. The right-hand side vectors $\mathbf{f}^\gamma_{\boldsymbol{\sigma}}$ and $\mathbf{f}^\gamma_{p}$ are the Dirichlet contribution and source term, respectively. This latter often is assumed to be zero.
 
 It is worth a discussion about some properties of problem \eqref{eq:matrixform}. Matrix $\mathbf{A}$ is symmetric positive-definite and contains contributions from facet and internal fluxes. The latter ones can be eliminated from the global system by using a static condensation procedure \cite{guyan1965reduction}. Using the element-wise divergence constant approximation space of \cite{devloo2022efficient} results in a single pressure unknown per element. Thus, the global system comprises only facet fluxes and elemental pressures contributions.
 
@@ -156,7 +154,7 @@ We propose a modified matrix
 \end{equation}
 \vskip -0.3cm
 \begin{equation}
-    \bar{\mathbf{f}} = \mathbf{f}^\gamma_{\boldsymbol{\sigma}} + \mathbf{B}\mathbf{C}^{-1}\mathbf{f}^\gamma_{u}
+    \bar{\mathbf{f}} = \mathbf{f}^\gamma_{\boldsymbol{\sigma}} + \mathbf{B}\mathbf{C}^{-1}\mathbf{f}^\gamma_{p}
 \end{equation}
 
 \noindent where $\bar{\mathbf{G}}$ is also symmetric positive-definite and can be seen as the Schur complement of block $\mathbf{C}$ of matrix $\mathbf{\Tilde{G}}$. 
@@ -166,11 +164,11 @@ The proposed iterative method uses matrix $\bar{\mathbf{G}}$ as a preconditioner
 \boldsymbol{\sigma}^0 = \bar{\mathbf{G}}^{-1}\bar{\mathbf{f}}
 \end{equation}
 \begin{equation}
-\mathbf{u}^0 = C^{-1}\left(\mathbf{B}^T \boldsymbol{\sigma}^0-\mathbf{f}_u^\gamma\right)
+\mathbf{p}^0 = C^{-1}\left(\mathbf{B}^T \boldsymbol{\sigma}^0-\mathbf{f}_p^\gamma\right)
 \end{equation}
 \vskip -0.3cm
 \begin{equation}
-    \mathbf{r}^{k} = - \mathbf{B}\mathbf{C}^{-1}\left(\mathbf{B}^T \boldsymbol{\sigma}^k-\mathbf{f}_u^\gamma \right) .
+    \mathbf{r}^{k} = - \mathbf{B}\mathbf{C}^{-1}\left(\mathbf{B}^T \boldsymbol{\sigma}^k-\mathbf{f}_p^\gamma \right) .
 \end{equation}
 
 \noindent Then, we compute the solution increment:
@@ -180,7 +178,7 @@ The proposed iterative method uses matrix $\bar{\mathbf{G}}$ as a preconditioner
 \end{equation}
 
 \begin{equation}
-\Delta \mathbf{u}^k = C^{-1}\mathbf{B}^T\Delta \boldsymbol{\sigma}^k
+\Delta \mathbf{p}^k = C^{-1}\mathbf{B}^T\Delta \boldsymbol{\sigma}^k
 \end{equation}
 
 \noindent finally yielding
@@ -190,7 +188,7 @@ The proposed iterative method uses matrix $\bar{\mathbf{G}}$ as a preconditioner
 \end{equation}
 \vskip -0.3cm
 \begin{equation}
-    \mathbf{u}^{k+1} = \mathbf{u}^{k} + \Delta\mathbf{u}^k
+    \mathbf{p}^{k+1} = \mathbf{p}^{k} + \Delta\mathbf{p}^k
 \end{equation}
 
 In engineering terms, the matrix of an incompressible problem is preconditioned by a matrix corresponding to a slightly compressible system. To demonstrate its convergence, we start from the basic description of the iterative method:
@@ -249,7 +247,7 @@ In this section, a tridimensional problem is used to assess the performance and 
 The computational domain consists on a unit cube $\Omega=(0,1)\times(0,1)\times(0,1)$ and a uniform mesh of hexahedral elements with $k=2$ and characteristic size $h_e=1/n$, where $n=n_x=n_y=n_z$ is the number of elements used in each dimension, starting from $n=5$ up to $n=60$.  The permeability tensor is assumed to be isotropic and unitary, so $\mathcal{K}=\mathbf{I}_3$. The following harmonic solution is adopted for the pressure field:
 \vskip -0.3cm
 \begin{equation} \label{eq:analytic-pressure}
-    u(x,y,z) = \frac{\sin(\pi x) \sin(\pi y) \sinh(\sqrt{2}\pi z)}{\sinh(\sqrt{2}\pi)} \text{.}
+    p(x,y,z) = \frac{\sin(\pi x) \sin(\pi y) \sinh(\sqrt{2}\pi z)}{\sinh(\sqrt{2}\pi)} \text{.}
 \end{equation}
 
 It is straightforward to derive the corresponding flux field from Eq. \eqref{eq:analytic-pressure}. Figure \ref{fig:analytic-solutions} shows the analytic solutions over the domain. Dirichlet boundary conditions are imposed on all the facets.
